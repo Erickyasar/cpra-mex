@@ -53,6 +53,10 @@ main.contenedor { padding-top: 1rem; }
 }
 .ayuda { color: var(--texto-suave); font-size: 0.875rem; margin: 0 0 1rem; }
 .privacidad { margin: 1rem 0 0.75rem; }
+.explica { margin: -0.5rem 0 1rem; font-size: 0.875rem; }
+.explica p { color: var(--texto-suave); margin: 0.5rem 0 0; }
+.autores { list-style: none; padding: 0; margin: 0 0 0.75rem; }
+a { color: var(--azul); }
 .botones { display: flex; flex-wrap: wrap; align-items: center; gap: 0.75rem; }
 .boton {
   font: inherit; font-weight: 600; cursor: pointer; border-radius: 0.3rem; padding: 0.55rem 1.1rem;

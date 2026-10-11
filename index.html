@@ -40,7 +40,12 @@
               </div>
               <ul id="ua-sugerencias" class="sugerencias" role="listbox" hidden></ul>
             </div>
-            <p class="ayuda">Escriba, elija de la lista o pegue la lista completa separada por comas o espacios. Acepta antígenos (A2, Cw7, Bw4, DR17) y alelos a dos campos (DRB1*04:07).</p>
+            <p class="ayuda">Escriba o pegue la lista separada por comas o espacios, tal como aparece en el reporte de PRA: como antígeno (A2, Cw7, Bw4, DR17) o como alelo (DRB1*04:07). Al escribir el asterisco, por ejemplo <strong>DRB1*</strong>, se despliegan los alelos disponibles.</p>
+            <details class="explica">
+              <summary>¿Qué es un antígeno inaceptable?</summary>
+              <p>Es un antígeno HLA contra el que el paciente tiene anticuerpos y que, por eso, su programa de trasplante decide evitar en un donante. Cada programa lo define a partir del PRA, según el valor de MFI y el criterio del laboratorio y del equipo clínico.</p>
+              <p><strong>Ejemplo:</strong> si el PRA muestra anticuerpos contra A2, B35 y DR51 por arriba del umbral de su programa, se escriben A2, B35 y DR51. El resultado es un cPRA de 75%: de cada 100 donantes, unos 75 tendrían al menos uno de esos antígenos y unos 25 serían compatibles.</p>
+            </details>
             <label for="pool" class="rotulo-campo">Población de referencia</label>
             <select id="pool" class="campo">
               <option value="NACIONAL">Nacional (recomendada)</option>
@@ -100,6 +105,11 @@
 
     <section id="panel-metodos" role="tabpanel" aria-labelledby="tab-metodos" hidden>
       <div class="texto">
+        <h2>Qué es un antígeno inaceptable</h2>
+        <p>Es un antígeno HLA contra el que el paciente en espera de trasplante tiene anticuerpos y que, por eso, su programa decide evitar en un donante. Un donante que porta alguno de ellos se considera incompatible para ese paciente.</p>
+        <p>Esta calculadora no decide qué antígenos son inaceptables. Cada programa de trasplante los define a partir del estudio de anticuerpos anti-HLA (PRA por antígeno aislado), según la intensidad de cada anticuerpo (MFI), el umbral que use el laboratorio y la decisión del equipo clínico.</p>
+        <p><strong>Ejemplo.</strong> El PRA de un paciente muestra anticuerpos contra A2, B35 y DR51 con MFI por arriba del umbral de su programa (por ejemplo, 3,000). Se escriben A2, B35 y DR51 y la calculadora devuelve un cPRA de 75%: de cada 100 donantes de la población de referencia, unos 75 portarían al menos uno de esos antígenos y unos 25 serían compatibles.</p>
+        <p>Escriba cada especificidad con la resolución que reporte el PRA: como antígeno (A2, DR51) o como alelo a dos campos (DRB1*04:07).</p>
         <h2>Qué calcula</h2>
         <p>El cPRA (PRA calculado) estima el porcentaje de donantes de una población de referencia que portan al menos uno de los antígenos HLA inaceptables de un candidato. cPRA-MEX usa frecuencias haplotípicas de donantes mexicanos en lugar de una referencia de Estados Unidos.</p>
         <p>Si <em>p</em> es la frecuencia de los haplotipos de la referencia que portan al menos un antígeno inaceptable, entonces cPRA = 1 − (1 − <em>p</em>)², bajo el supuesto de apareamiento aleatorio de los dos haplotipos. Los valores por clase y por locus repiten el cálculo con el subconjunto correspondiente de antígenos.</p>
@@ -124,6 +134,15 @@
         </ul>
         <h2>Privacidad</h2>
         <p>Todo el cálculo ocurre en su navegador. Ni los antígenos que escribe ni los archivos que procesa salen de su computadora, y la página no usa cookies ni servicios de terceros.</p>
+        <h2>Elaborado por</h2>
+        <ul class="autores">
+          <li>Erick Yasar Zuñiga González</li>
+          <li>Luis Agustin Camacho Murillo</li>
+          <li>Cynthia García Sanchez</li>
+          <li>Mariana Polett Sebastian Bolaños</li>
+          <li>Luis Eduardo Morales Buenrostro</li>
+        </ul>
+        <p>Contacto: <a href="mailto:info@cpramex.com">info@cpramex.com</a></p>
         <p class="pie" id="version"></p>
       </div>
     </section>

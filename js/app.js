@@ -161,7 +161,7 @@
     if (!query || !ref) { hideSuggestions(); return; }
     const chosen = new Set(entries.map(entryKey));
     const matches = [];
-    for (let i = 0; i < choices.length && matches.length < 12; i++) {
+    for (let i = 0; i < choices.length && matches.length < 300; i++) {
       if (choices[i].key.startsWith(query) && !chosen.has(choices[i].key)) matches.push(choices[i]);
     }
     if (!matches.length) { hideSuggestions(); return; }
