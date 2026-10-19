@@ -109,7 +109,9 @@
       meta: meta, loci: loci, pools: pools, nHaplotypes: n, haplotypes: haplotypes, weights: weights,
       alleles: meta.alleles, alleleIndex: alleleIndex, alleleFrequency: alleleFrequency,
       antigenIndex: meta.antigenIndex, knownAntigens: new Set(meta.knownAntigens),
-      knownAlleles: knownAlleles, groupOf: meta.groupOf, alleleGroup: meta.alleleGroup
+      knownAlleles: knownAlleles, groupOf: meta.groupOf, alleleGroup: meta.alleleGroup,
+      antigenOf: meta.antigenOf || {}, antigenRole: meta.antigenRole || {},
+      antigenIndexHats: meta.antigenIndexHats || {}
     };
   }
 
@@ -153,6 +155,27 @@
 
   function displayToken(value) {
     return value.replace(/^CW(?=[0-9])/, 'Cw').replace(/^BW(?=[46]$)/, 'Bw');
+  }
+
+  // WHO serologic assignment of a set of reference alleles of one locus,
+  // read from the "broad|split|associated" strings exported with the reference.
+  function assignmentOf(locus, indices, ref) {
+    const out = { amplio: [], split: [], asociado: [] };
+    const rows = ref.antigenOf[locus];
+    if (!rows) return out;
+    const seen = [new Set(), new Set(), new Set()];
+    indices.forEach(function (i) {
+      const parts = String(rows[i] || '').split('|');
+      [0, 1, 2].forEach(function (k) {
+        String(parts[k] || '').split(' ').forEach(function (antigen) {
+          if (antigen && !seen[k].has(antigen)) { seen[k].add(antigen); }
+        });
+      });
+    });
+    out.amplio = Array.from(seen[0]).map(displayToken).sort();
+    out.split = Array.from(seen[1]).map(displayToken).sort();
+    out.asociado = Array.from(seen[2]).map(displayToken).sort();
+    return out;
   }
 
   function resolveToken(token, ref) {
@@ -201,6 +224,7 @@
       if (group !== undefined) groups.forEach(function (g, i) { if (g === group) out.idx.push(i); });
       if (out.idx.length) {
         out.estado = 'ok';
+        out.equivalencia = assignmentOf(locus, out.idx, ref);
         const labels = out.idx.map(function (i) { return pool[i]; });
         const exact = labels.indexOf(allele) !== -1;
         out.nota = (group.endsWith('P') ? 'Grupo ' + group + ': ' : '') +
@@ -227,10 +251,14 @@
     out.normalizado = key;
     out.tipo = 'Antígeno';
     out.locus = locus;
+    out.rol = ref.antigenRole[key] || null;
+    const hatsIndex = (ref.antigenIndexHats[locus] || {})[key];
     const index = ref.antigenIndex[locus][key];
     if (index && index.length) {
       out.idx = index.slice();
       out.estado = 'ok';
+      out.equivalencia = assignmentOf(locus, out.idx, ref);
+      if (hatsIndex && hatsIndex.length > index.length) out.idxHats = hatsIndex.slice();
     } else if (ref.knownAntigens.has(key)) {
       out.estado = 'sin_frecuencia';
       out.nota = 'Antígeno válido, pero ningún alelo equivalente tiene frecuencia en la referencia mexicana.';
@@ -296,18 +324,22 @@
         cpra[scope][pool] = 1 - (1 - probability) * (1 - probability);
       });
     });
-    const target = tokens.map(function (token) {
+    const single = function (token, indices) {
       const row = {};
       const l = token.locus === null ? -1 : ref.loci.indexOf(token.locus);
       ref.pools.forEach(function (pool, p) {
         let probability = 0;
-        token.idx.forEach(function (i) { probability += ref.alleleFrequency[p][l][i]; });
+        indices.forEach(function (i) { probability += ref.alleleFrequency[p][l][i]; });
         probability = Math.min(probability, 1);
         row[pool] = 1 - (1 - probability) * (1 - probability);
       });
       return row;
-    });
-    return { cpra: cpra, target: target };
+    };
+    const target = tokens.map(function (token) { return single(token, token.idx); });
+    // Same target under the HATS assignment, for the note in the detail table.
+    // It never enters the cPRA above, which uses the WHO assignment.
+    const targetHats = tokens.map(function (token) { return token.idxHats ? single(token, token.idxHats) : null; });
+    return { cpra: cpra, target: target, targetHats: targetHats };
   }
 
   global.CPRA = {

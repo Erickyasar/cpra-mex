@@ -152,6 +152,10 @@ a { color: var(--azul); }
 .estado-sin_frecuencia { background: #fff6e0; color: #6b4a00; }
 .estado-no_reconocido { background: #fdecec; color: #7a1a1a; }
 .nota { color: var(--texto-suave); font-size: 0.8rem; margin-top: 0.25rem; max-width: 26rem; }
+.nota-aviso { color: #6b4a00; background: #fff6e0; border-radius: 0.3rem; padding: 0.3rem 0.45rem; }
+.equivalencia { font-size: 0.85rem; max-width: 18rem; }
+.equivalencia .nota { margin: 0 0 0.2rem; }
+.rotulo-eq { color: var(--texto-suave); }
 details summary { cursor: pointer; color: var(--azul); }
 
 .texto { max-width: 52rem; background: #fff; border: 1px solid var(--borde); border-radius: 0.5rem; padding: 1.5rem; }

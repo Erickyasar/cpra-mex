@@ -345,18 +345,23 @@
         const alleles = token.idx.map(function (index) { return ref.alleles[token.locus][index]; });
         const allelesCell = !alleles.length ? '—' : (alleles.length <= 3 ? alleles.join(', ')
           : h('details', null, h('summary', null, alleles.length + ' alelos'), alleles.join(', ')));
+        const hatsNote = hatsDifference(token, i, pool);
         return h('tr', null,
           h('th', { scope: 'row' }, token.entrada),
           h('td', null, token.tipo || '—'),
           h('td', null, token.locus ? SCOPE_LABELS[token.locus] : '—'),
+          h('td', null, assignmentCell(token)),
           h('td', null, allelesCell),
           h('td', { class: 'num' }, token.estado === 'no_reconocido' ? '—' : fmtPct(lastCalc.result.target[i][pool])),
           h('td', null, h('span', { class: 'estado estado-' + token.estado }, STATUS_LABELS[token.estado]),
-            token.nota ? h('div', { class: 'nota' }, token.nota) : null));
+            token.nota ? h('div', { class: 'nota' }, token.nota) : null,
+            hatsNote ? h('div', { class: hatsNote.aviso ? 'nota nota-aviso' : 'nota' }, hatsNote.texto) : null));
       });
       parts.push(h('div', { class: 'tarjeta' }, h('h2', { class: 'tarjeta-titulo' }, 'Cómo se interpretó cada entrada'),
         h('div', { class: 'tarjeta-cuerpo' },
-          table(['Entrada', 'Tipo', 'Locus', 'Alelos de la referencia', num('cPRA individual'), 'Estado'], tokenRows))));
+          table(['Entrada', 'Tipo', 'Locus', 'Equivalencia serológica (OMS)', 'Alelos de la referencia', num('cPRA individual'), 'Estado'], tokenRows),
+          h('p', { class: 'pie' },
+            'La equivalencia serológica es la asignada por la OMS en IPD-IMGT/HLA 3.65.0: antígeno amplio, su split cuando existe, y la designación asociada a nivel alélico (por ejemplo A0201). El cálculo usa esa asignación; cuando la tabla HATS abarca más alelos se indica en la columna «Estado». Bw4 y Bw6 siempre se evalúan con HATS, solo en HLA-B.'))));
     }
     replace(target, parts);
   }
@@ -417,6 +422,37 @@
     }
     if (field !== '' || row.length) { row.push(field); rows.push(row); }
     return rows.filter(function (cells) { return cells.some(function (cell) { return cell.trim() !== ''; }); });
+  }
+
+  const ROLE_LABELS = { broad: 'antígeno amplio', split: 'split', associated: 'designación a nivel alélico' };
+
+  // WHO assignment of an entry: broad antigen, split and allele-level designation.
+  function assignmentCell(token) {
+    const eq = token.equivalencia;
+    if (!eq || (!eq.amplio.length && !eq.split.length && !eq.asociado.length)) return '—';
+    const line = function (label, values) {
+      if (!values.length) return null;
+      const text = values.length <= 4 ? values.join(', ')
+        : values.slice(0, 4).join(', ') + ' y ' + fmtCount(values.length - 4) + ' más';
+      return h('div', null, h('span', { class: 'rotulo-eq' }, label + ': '), text);
+    };
+    return h('div', { class: 'equivalencia' },
+      token.rol ? h('div', { class: 'nota' }, 'La entrada es ' + (ROLE_LABELS[token.rol] || token.rol) + '.') : null,
+      line('Amplio', eq.amplio), line('Split', eq.split), line('Alélica', eq.asociado));
+  }
+
+  // The HATS table assigns antigens to alleles the WHO table leaves unassigned.
+  // Shown for information: the calculation keeps the WHO assignment.
+  function hatsDifference(token, i, pool) {
+    if (!token.idxHats || !lastCalc.result.targetHats) return null;
+    const hats = lastCalc.result.targetHats[i];
+    if (!hats) return null;
+    const diff = 100 * (hats[pool] - lastCalc.result.target[i][pool]);
+    const extra = token.idxHats.length - token.idx.length;
+    const base = 'Con la tabla HATS abarcaría ' + fmtCount(token.idxHats.length) + ' alelos (' +
+      fmtCount(extra) + ' más) y su cPRA individual sería ' + fmtPct(hats[pool]) + '.';
+    if (diff < 0.5) return { texto: base + ' La diferencia es menor a 0.5 puntos.', aviso: false };
+    return { texto: base + ' Son ' + diff.toFixed(1) + ' puntos más: verifique si el reporte se refiere a ese alelo o a todo el grupo serológico.', aviso: true };
   }
 
   function csvField(value) {

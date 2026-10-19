@@ -121,8 +121,17 @@
           <li><strong>Antígenos</strong> (A2, B35, Cw7, DR17, DR51, DQ7): se traducen a alelos con las equivalencias serológicas asignadas por la OMS (IPD-IMGT/HLA 3.65.0); DR103 corresponde a DRB1*01:03 y DPx a DPB1*x, como en OPTN. Bw4 y Bw6 se evalúan solo en HLA-B (tabla HATS). DQ y DP serológicos se asignan a la cadena beta (DQB1, DPB1). Los alelos nulos no portan antígeno. No se aceptan antígenos inexistentes (por ejemplo, DR41).</li>
           <li><strong>Alelos a dos campos</strong> (DRB1*04:07, DQA1*05:01): se comparan por grupo P de IPD-IMGT/HLA 3.65.0, es decir, con todas las etiquetas de la referencia que codifican el mismo dominio de reconocimiento antigénico. La referencia mexicana está reducida a ese nivel, por lo que una etiqueta como DRB4*01:01 representa a todo su grupo. Es la misma regla del análisis del artículo.</li>
           <li><strong>Primer campo</strong> (DQA1*05, DRB3*02): incluye todos los alelos de la referencia con ese primer campo.</li>
+          <li><strong>Designaciones a nivel alélico</strong> (A0201, Cw0702, B4402): la OMS las asigna a un alelo concreto, de modo que A0201 equivale a A*02:01 y no a todo el grupo A2. Si en su reporte esa etiqueta representa a toda la especificidad serológica, escriba el antígeno (A2) o el alelo con asterisco; la tabla del final le muestra la diferencia.</li>
           <li>DQA1, DQB1, DPA1 y DPB1 se evalúan como cadenas individuales, no como heterodímeros. Si el reporte de PRA indica un par (por ejemplo, DQA1*05:01/DQB1*02:01), escriba las cadenas que su programa considera inaceptables.</li>
         </ul>
+        <h2>Equivalencias serológicas: qué significa cada columna</h2>
+        <p>Debajo del resultado, la tabla «Cómo se interpretó cada entrada» indica la equivalencia serológica que la OMS asigna en IPD-IMGT/HLA 3.65.0 a lo que usted escribió. La asignación tiene tres niveles:</p>
+        <ul>
+          <li><strong>Antígeno amplio</strong>: la especificidad original, anterior a que el suero permitiera separarla (por ejemplo B12, A9, DR3). Incluye a todos sus splits.</li>
+          <li><strong>Split</strong>: la subdivisión de un antígeno amplio que los antisueros sí distinguen (B44 y B45 son los splits de B12; A23 y A24 los de A9; DR17 y DR18 los de DR3).</li>
+          <li><strong>Designación asociada a nivel alélico</strong>: la etiqueta que la OMS asigna a un alelo concreto cuando no corresponde a un antígeno serológico propio (A0201, Cw0702, B4402). Equivale a ese alelo, no al grupo.</li>
+        </ul>
+        <p>Existen dos tablas de equivalencias. La de la <strong>OMS</strong> es la que usa esta calculadora y la del artículo. La de <strong>HATS</strong> (<i>HLA Antigen Table, Serology</i>, la que emplea OPTN en Estados Unidos) asigna antígeno a muchos alelos que la OMS deja sin asignar, por lo que suele abarcar más alelos de la referencia. Cuando una entrada cambia con HATS, la columna «Estado» lo indica junto con el cPRA individual que resultaría; si la diferencia supera medio punto, conviene revisar si el reporte del laboratorio se refiere al alelo o a todo el grupo serológico. La única excepción es Bw4 y Bw6, que siempre se evalúan con HATS y solo en HLA-B, igual que en OPTN.</p>
         <h2>Limitaciones</h2>
         <ul>
           <li>Herramienta de investigación. No es un sistema oficial de asignación ni sustituye la prueba cruzada, la evaluación del laboratorio de histocompatibilidad o el juicio clínico.</li>
