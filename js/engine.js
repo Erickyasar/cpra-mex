@@ -1,10 +1,15 @@
-// cPRA-MEX calculation engine (browser port of cpra-mex-app/R/engine.R).
+// cPRA-MEX calculation engine (browser port of code/lib_cpramex.R).
 //
 // Each unacceptable specificity is resolved to the reference alleles of one
 // locus, and cPRA = 1 - (1 - p)^2, where p is the frequency of haplotypes
 // carrying at least one of them. Class and locus values restrict the target
-// set; they are never added. tests/verify.html checks this file against the
-// stored results of the analysis.
+// set; they are never added.
+//
+// Matching follows the primary analysis: an allele target matches every
+// reference allele of its IPD-IMGT/HLA P group (identical antigen-recognition
+// domain); antigens follow the WHO assignments within the P group; DP
+// antigens are DPB1 first field; null alleles carry no antigen.
+// tests/verify_engine.js checks this file against the analysis results.
 
 (function (global) {
   'use strict';
@@ -104,7 +109,7 @@
       meta: meta, loci: loci, pools: pools, nHaplotypes: n, haplotypes: haplotypes, weights: weights,
       alleles: meta.alleles, alleleIndex: alleleIndex, alleleFrequency: alleleFrequency,
       antigenIndex: meta.antigenIndex, knownAntigens: new Set(meta.knownAntigens),
-      knownAlleles: knownAlleles, pGroupOf: meta.pGroupOf, pGroupPool: meta.pGroupPool
+      knownAlleles: knownAlleles, groupOf: meta.groupOf, alleleGroup: meta.alleleGroup
     };
   }
 
@@ -117,7 +122,8 @@
     value = value.replace(/^HLA-/, '');
     value = value.replace(/^QA1\*/, 'DQA1*');
     value = value.replace(/^QB1\*/, 'DQB1*');
-    value = value.replace(/\.$/, '');
+    value = value.replace(/\.+$/, '');
+    value = value.replace(/(\d)\.(\d)/g, '$1:$2');
     value = value.replace(/^C(?=[0-9])/, 'CW');
     // A*0201 is accepted as A*02:01.
     value = value.replace(/^([A-Z0-9]+)\*([0-9]{2})([0-9]{2})$/, '$1*$2:$3');
@@ -164,41 +170,44 @@
         const prefix = value + ':';
         out.tipo = 'Grupo (primer campo)';
         out.locus = locus;
-        pool.forEach(function (allele, i) { if (allele.startsWith(prefix)) out.idx.push(i); });
+        pool.forEach(function (allele, i) { if (allele.startsWith(prefix) && !/N$/.test(allele)) out.idx.push(i); });
         let known = false;
         if (!out.idx.length) ref.knownAlleles.forEach(function (allele) { if (!known && allele.startsWith(prefix)) known = true; });
         out.estado = out.idx.length ? 'ok' : (known ? 'sin_frecuencia' : 'no_reconocido');
-        out.nota = out.idx.length ? 'Incluye todos los alelos de la referencia con ese primer campo.'
+        out.nota = out.idx.length ? 'Incluye todos los alelos expresados de la referencia con ese primer campo.'
           : (known ? 'Ningún alelo de este grupo tiene frecuencia en la referencia mexicana.'
             : 'Grupo alélico inexistente en IPD-IMGT/HLA 3.65.0.');
         return out;
       }
-      if (/[0-9][PG]$/.test(value)) {
-        out.nota = 'Los grupos P o G no se admiten; escriba el alelo a dos campos.';
+      const explicitGroup = /[0-9]P$/.test(value);
+      if (/[0-9]G$/.test(value)) {
+        out.nota = 'Los grupos G no se admiten; escriba el alelo a dos campos o el grupo P.';
         return out;
       }
-      const allele = twoFieldAllele(value);
+      const allele = twoFieldAllele(explicitGroup ? value.slice(0, -1) : value);
       if (allele === null) {
         out.nota = 'Formato de alelo no válido.';
         return out;
       }
-      out.normalizado = allele;
-      out.tipo = 'Alelo (dos campos)';
+      out.normalizado = explicitGroup ? allele + 'P' : allele;
+      out.tipo = 'Alelo (grupo P)';
       out.locus = locus;
-      const index = ref.alleleIndex[locus].get(allele);
-      if (index !== undefined) {
-        out.idx = [index];
+      const groups = ref.alleleGroup[locus];
+      let group = explicitGroup ? (gene + '*' + allele.split('*')[1] + 'P') : ref.groupOf[allele];
+      if (group === undefined) {
+        const own = ref.alleleIndex[locus].get(allele);
+        if (own !== undefined) group = groups[own];
+      }
+      if (group !== undefined) groups.forEach(function (g, i) { if (g === group) out.idx.push(i); });
+      if (out.idx.length) {
         out.estado = 'ok';
+        const labels = out.idx.map(function (i) { return pool[i]; });
+        const exact = labels.indexOf(allele) !== -1;
+        out.nota = (group.endsWith('P') ? 'Grupo ' + group + ': ' : '') +
+          (exact && labels.length === 1 ? '' : 'se cuentan las etiquetas de la referencia con el mismo dominio de reconocimiento (' + labels.join(', ') + ').');
       } else if (ref.knownAlleles.has(allele)) {
         out.estado = 'sin_frecuencia';
-        const group = ref.pGroupOf[allele];
-        const relatives = group === undefined ? [] : ref.pGroupPool[group].filter(function (relative) {
-          return ref.alleleIndex[locus].has(relative);
-        });
-        out.nota = relatives.length
-          ? 'Sin frecuencia propia en la referencia. Comparte grupo P con ' + relatives.join(', ') +
-            ', que sí tiene frecuencia; si el anticuerpo también reconoce ese alelo, agréguelo.'
-          : 'Sin frecuencia en la referencia mexicana.';
+        out.nota = /N$/.test(allele) ? 'Alelo nulo: no se expresa.' : 'Ni el alelo ni su grupo P tienen frecuencia en la referencia mexicana.';
       } else {
         out.nota = 'Alelo inexistente en IPD-IMGT/HLA 3.65.0.';
       }

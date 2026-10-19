@@ -75,7 +75,7 @@
         <div class="tarjeta">
           <h2 class="tarjeta-titulo">Archivo de pacientes</h2>
           <div class="tarjeta-cuerpo">
-            <p class="ayuda">Archivo CSV con encabezados y dos columnas: la primera con un identificador y la segunda con los antígenos inaceptables separados por comas o espacios. Desde Excel: «Guardar como → CSV UTF-8».</p>
+            <p class="ayuda">Archivo CSV con encabezados: la primera columna con un identificador y, a partir de la segunda, los antígenos inaceptables (en una o varias columnas, separados por comas, punto y coma o espacios). Desde Excel: «Guardar como → CSV UTF-8». No incluya nombres ni expedientes.</p>
             <p class="ayuda privacidad">El archivo se lee en este navegador y no se envía a ningún servidor.</p>
             <label for="archivo" class="rotulo-campo">Seleccionar archivo</label>
             <input type="file" id="archivo" class="campo" accept=".csv,.txt,text/csv">
@@ -118,16 +118,16 @@
         <div id="tabla-regiones"></div>
         <h2>Cómo se interpretan las entradas</h2>
         <ul>
-          <li><strong>Antígenos</strong> (A2, B35, Cw7, Bw4, DR17, DR51, DQ7): se traducen a alelos con las equivalencias serológicas asignadas por la OMS (IPD-IMGT/HLA 3.65.0). DQ y DP serológicos se asignan a la cadena beta (DQB1, DPB1).</li>
-          <li><strong>Alelos a dos campos</strong> (DRB1*04:07, DQA1*05:01): se comparan con la etiqueta exacta de la referencia, sin agrupar por grupo P.</li>
+          <li><strong>Antígenos</strong> (A2, B35, Cw7, DR17, DR51, DQ7): se traducen a alelos con las equivalencias serológicas asignadas por la OMS (IPD-IMGT/HLA 3.65.0); DR103 corresponde a DRB1*01:03 y DPx a DPB1*x, como en OPTN. Bw4 y Bw6 se evalúan solo en HLA-B (tabla HATS). DQ y DP serológicos se asignan a la cadena beta (DQB1, DPB1). Los alelos nulos no portan antígeno. No se aceptan antígenos inexistentes (por ejemplo, DR41).</li>
+          <li><strong>Alelos a dos campos</strong> (DRB1*04:07, DQA1*05:01): se comparan por grupo P de IPD-IMGT/HLA 3.65.0, es decir, con todas las etiquetas de la referencia que codifican el mismo dominio de reconocimiento antigénico. La referencia mexicana está reducida a ese nivel, por lo que una etiqueta como DRB4*01:01 representa a todo su grupo. Es la misma regla del análisis del artículo.</li>
           <li><strong>Primer campo</strong> (DQA1*05, DRB3*02): incluye todos los alelos de la referencia con ese primer campo.</li>
-          <li>DQA1, DQB1, DPA1 y DPB1 se evalúan como cadenas individuales, no como heterodímeros.</li>
+          <li>DQA1, DQB1, DPA1 y DPB1 se evalúan como cadenas individuales, no como heterodímeros. Si el reporte de PRA indica un par (por ejemplo, DQA1*05:01/DQB1*02:01), escriba las cadenas que su programa considera inaceptables.</li>
         </ul>
         <h2>Limitaciones</h2>
         <ul>
           <li>Herramienta de investigación. No es un sistema oficial de asignación ni sustituye la prueba cruzada, la evaluación del laboratorio de histocompatibilidad o el juicio clínico.</li>
           <li>El resultado depende de la lista de antígenos inaceptables, y esta del umbral de MFI y de los criterios de cada laboratorio.</li>
-          <li>La referencia se estimó a resolución de dominio de reconocimiento antigénico (ARD). Un alelo puede no tener frecuencia propia aunque esté representado por otra etiqueta de su grupo; en ese caso la calculadora lo señala y aporta 0, lo que puede subestimar el cPRA.</li>
+          <li>La referencia se estimó a resolución de dominio de reconocimiento antigénico (ARD). Por eso los alelos se agrupan por grupo P; un alelo cuyo grupo no aparece en la referencia aporta 0 y la calculadora lo señala.</li>
           <li>La referencia proviene de un registro de donantes voluntarios de células hematopoyéticas, no de donantes renales fallecidos, y su composición regional no equivale a la distribución de la población ni de los donantes de órganos.</li>
           <li>Las categorías de sensibilización son orientativas y provienen de la literatura; no son criterios oficiales de asignación en México.</li>
           <li>No considera el grupo sanguíneo ni otros factores de compatibilidad.</li>

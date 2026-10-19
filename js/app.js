@@ -69,13 +69,18 @@
     if (n > 99) return 'más de 99';
     return String(n);
   }
+  // Categories used in the study (unrounded value): <20, 20-<50, 50-<80,
+  // 80-<95, 95-<98, 98-<99, >=99.
   function category(p) {
     const pct = 100 * p;
     if (pct <= 0) return { label: 'Sin sensibilización frente a los antígenos indicados', level: 'bajo' };
-    if (pct < 20) return { label: 'Sensibilización baja (cPRA < 20%)', level: 'bajo' };
-    if (pct < 80) return { label: 'Sensibilizado (cPRA 20% a < 80%)', level: 'medio' };
-    if (pct < 98) return { label: 'Altamente sensibilizado (cPRA 80% a < 98%)', level: 'alto' };
-    return { label: 'Muy altamente sensibilizado (cPRA ≥ 98%)', level: 'muy-alto' };
+    if (pct < 20) return { label: 'cPRA < 20%', level: 'bajo' };
+    if (pct < 50) return { label: 'cPRA 20% a < 50%', level: 'medio' };
+    if (pct < 80) return { label: 'cPRA 50% a < 80%', level: 'medio' };
+    if (pct < 95) return { label: 'cPRA 80% a < 95%', level: 'alto' };
+    if (pct < 98) return { label: 'cPRA 95% a < 98%', level: 'alto' };
+    if (pct < 99) return { label: 'cPRA 98% a < 99%', level: 'muy-alto' };
+    return { label: 'cPRA ≥ 99%', level: 'muy-alto' };
   }
   function table(header, rows, extraClass) {
     return h('div', { class: 'tabla-marco' }, h('table', { class: 'tabla' + (extraClass ? ' ' + extraClass : '') },
@@ -414,7 +419,12 @@
     return rows.filter(function (cells) { return cells.some(function (cell) { return cell.trim() !== ''; }); });
   }
 
-  function csvField(value) { return '"' + String(value).replace(/"/g, '""') + '"'; }
+  function csvField(value) {
+    let text = String(value);
+    // Prevent spreadsheet formula injection from identifiers typed by users.
+    if (/^[=+\-@]/.test(text)) text = "'" + text;
+    return '"' + text.replace(/"/g, '""') + '"';
+  }
 
   const BATCH_COLUMNS = ['ID', 'Antigenos_inaceptables', 'Poblacion', 'cPRA_MEX_pct', 'cPRA_MEX_detallado', 'Compatibles_por_100']
     .concat(Object.keys(SCOPE_LABELS).filter(function (scope) { return scope !== 'Global'; }).map(function (scope) { return 'cPRA_' + scope; }))
@@ -484,7 +494,9 @@
       // Work in slices so the page stays responsive on long lists.
       (function step() {
         const end = Math.min(next + 100, data.length);
-        for (; next < end; next++) results.push(batchRow(data[next][0] || '', data[next][1] || '', pool));
+        // Antigens may be spread over several columns when the list is comma-separated
+        // without quotes; every column after the identifier is read.
+        for (; next < end; next++) results.push(batchRow(data[next][0] || '', data[next].slice(1).join(' '), pool));
         if (next < data.length) {
           batchMessage('info', 'Calculando… ' + next + ' de ' + data.length);
           setTimeout(step, 0);
